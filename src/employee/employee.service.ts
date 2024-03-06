@@ -14,7 +14,16 @@ export class EmployeeService {
 
   // Create a new Employee entity and save it to the database
   async create(createEmployeeDto: CreateEmployeeDto): Promise<Employee> {
-    const employee = this.employeeRepository.create(createEmployeeDto);
+    let employee = await this.findByEmployeeIdentifier(createEmployeeDto.employeeIdentifier);
+
+    // If employee doesn't exist, create a new one
+    if (!employee) {
+      employee = this.employeeRepository.create(createEmployeeDto);
+    } else {
+      // If employee exists, update it
+      employee = this.employeeRepository.merge(employee, createEmployeeDto);
+    }
+
     return this.employeeRepository.save(employee);
   }
 
@@ -44,9 +53,6 @@ export class EmployeeService {
         employeeIdentifier: id
       },
     });
-    if (!employee) {
-      throw new NotFoundException(`Employee with ID ${id} not found`);
-    }
     return employee;
   }
 
@@ -75,20 +81,7 @@ export class EmployeeService {
   async bulkCreate(data: CreateEmployeeDto[]): Promise<Employee[]> {
     try {
       const employees = data.map(async (employeeData) => {
-        // Find existing employee
-        let employee = await this.employeeRepository.findOne({
-          where: { employeeIdentifier: employeeData.employeeIdentifier }
-        });
-
-        // If employee doesn't exist, create a new one
-        if (!employee) {
-          employee = this.employeeRepository.create(employeeData);
-        } else {
-          // If employee exists, update it
-          employee = this.employeeRepository.merge(employee, employeeData);
-        }
-
-        return this.employeeRepository.save(employee);
+        return this.create(employeeData);
       });
 
       return Promise.all(employees);
