@@ -24,6 +24,12 @@ dotenv.config();
         entities: ["dist/**/*.entity{.ts,.js}"],
         synchronize: false,
         autoLoadEntities: true,
+        ssl: true,
+        extra: {
+          ssl: {
+            rejectUnauthorized: false, // You may set this to true in production after configuring certificates
+          },
+        },
       }
     ),
     DepartmentModule,
