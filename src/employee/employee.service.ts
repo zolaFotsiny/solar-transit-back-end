@@ -55,6 +55,21 @@ export class EmployeeService {
     await this.employeeRepository.remove(employee);
   }
 
+
+  async employeeIdentifier(id: string): Promise<Employee> {
+    const employee = await this.employeeRepository.findOne({
+      where: {
+        employeeIdentifier: id
+      },
+    });
+    if (!employee) {
+      throw new NotFoundException(`Employee with ID ${id} not found or removed`);
+    }
+    return employee;
+  }
+
+
+
   async bulkCreate(data: CreateEmployeeDto[]): Promise<Employee[]> {
     try {
       const employees = data.map(async (employeeData) => {
