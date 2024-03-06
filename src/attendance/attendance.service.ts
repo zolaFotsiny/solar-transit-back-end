@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,25 +17,61 @@ export class AttendanceService {
   ) { }
 
 
-  create(createAttendanceDto: CreateAttendanceDto) {
-    return 'This action adds a new attendance';
+
+
+  // This action adds a new attendance
+  async create(createAttendanceDto: CreateAttendanceDto): Promise<Attendance> {
+    const employee = await this.employeeService.findByEmployeeIdentifier(createAttendanceDto.employee);
+    if (!employee) {
+      throw new NotFoundException(`Employee with ID ${createAttendanceDto.employee} not found`);
+    }
+    const attendance = this.attendanceRepository.create({
+      ...createAttendanceDto,
+      employee,
+    });
+    return this.attendanceRepository.save(attendance);
   }
 
-  findAll() {
-    return `This action returns all attendance`;
+
+  // This action returns all attendance
+  async findAll(): Promise<Attendance[]> {
+    return this.attendanceRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} attendance`;
+  // This action returns an attendance by id 
+  async findOne(id: number): Promise<Attendance> {
+    const attendance = await this.attendanceRepository.findOne({
+      where: {
+        id
+      },
+    });
+    if (!attendance) {
+      throw new NotFoundException(`Attendance with ID ${id} not found`);
+    }
+    return attendance;
   }
 
-  update(id: number, updateAttendanceDto: UpdateAttendanceDto) {
-    return `This action updates a #${id} attendance`;
+  // This action updates an attendance 
+  async update(id: number, updateAttendanceDto: UpdateAttendanceDto): Promise<Attendance> {
+    const attendance = await this.findOne(id);
+    const employee = await this.employeeService.findByEmployeeIdentifier(updateAttendanceDto.employee);
+    if (!employee) {
+      throw new NotFoundException(`Employee with ID ${updateAttendanceDto.employee} not found`);
+    }
+    this.attendanceRepository.merge(attendance, {
+      ...updateAttendanceDto,
+      employee,
+    });
+    return this.attendanceRepository.save(attendance);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} attendance`;
+
+  // This action removes an attendance
+  async remove(id: number): Promise<void> {
+    const attendance = await this.findOne(id);
+    await this.attendanceRepository.remove(attendance);
   }
+
 
   async bulkCreate(data: CreateAttendanceDto[]): Promise<Attendance[]> {
     try {
@@ -43,7 +79,7 @@ export class AttendanceService {
 
       for (const item of data) {
         console.log(item);
-        const employee = await this.employeeService.employeeIdentifier(item.employee);
+        const employee = await this.employeeService.findByEmployeeIdentifier(item.employee);
         const existingAttendances = await this.attendanceRepository.find({
           where: { date: item.date, employee: { id: employee.id } },
         });
@@ -52,30 +88,22 @@ export class AttendanceService {
           if (employee) {
             const attendanceData: Partial<Attendance> = {
               date: item.date,
-              employee: employee, // Compare with employee.id
-              // Ajouter d'autres champs communs ici
+              employee: employee,
             };
 
             const attendance = this.attendanceRepository.create(attendanceData);
-
-            console.log('Enregistrement d\'attendance créé :', attendance);
-
             const savedAttendance = await this.attendanceRepository.save(attendance);
             savedAttendances.push(savedAttendance);
           } else {
-            console.error(`Employé avec l'ID ${item.employee} non trouvé`);
             continue;
           }
 
         } else {
-          console.log('Enregistrement d\' attendance déjà existant. Ignoré :', existingAttendances);
+          console.log('Existing attendance record. Ignored:', existingAttendances);
         }
       }
-
-      console.log('Enregistrements d\'attendance enregistrés :', savedAttendances);
       return savedAttendances;
     } catch (error) {
-      console.error('Erreur lors de l\'enregistrement des enregistrements d\'attendance :', error);
       throw error;
     }
   }

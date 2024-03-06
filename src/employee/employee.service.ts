@@ -20,14 +20,28 @@ export class EmployeeService {
 
   // Retrieve all Employee entities from the database
   async findAll(): Promise<Employee[]> {
-    return this.employeeRepository.find();
+    return this.employeeRepository.find({ relations: ['department'] });
   }
+
 
   // Retrieve a single Employee entity by its ID
   async findOne(id: number): Promise<Employee> {
     const employee = await this.employeeRepository.findOne({
       where: {
         id
+      },
+    });
+    if (!employee) {
+      throw new NotFoundException(`Employee with ID ${id} not found`);
+    }
+    return employee;
+  }
+
+
+  async findByEmployeeIdentifier(id: string): Promise<Employee> {
+    const employee = await this.employeeRepository.findOne({
+      where: {
+        employeeIdentifier: id
       },
     });
     if (!employee) {
@@ -56,20 +70,8 @@ export class EmployeeService {
   }
 
 
-  async employeeIdentifier(id: string): Promise<Employee> {
-    const employee = await this.employeeRepository.findOne({
-      where: {
-        employeeIdentifier: id
-      },
-    });
-    if (!employee) {
-      throw new NotFoundException(`Employee with ID ${id} not found or removed`);
-    }
-    return employee;
-  }
 
-
-
+  // This method takes an array of employee data, creates new employees or updates existing ones, and saves them to the database.
   async bulkCreate(data: CreateEmployeeDto[]): Promise<Employee[]> {
     try {
       const employees = data.map(async (employeeData) => {
