@@ -1,34 +1,59 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, Put } from '@nestjs/common';
 import { DepartmentService } from './department.service';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 
 @Controller('department')
 export class DepartmentController {
-  constructor(private readonly departmentService: DepartmentService) {}
+  constructor(private readonly departmentService: DepartmentService) { }
 
   @Post()
-  create(@Body() createDepartmentDto: CreateDepartmentDto) {
-    return this.departmentService.create(createDepartmentDto);
+  async create(@Body() createDepartmentDto: CreateDepartmentDto) {
+    const department = await this.departmentService.create(createDepartmentDto);
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Department created successfully',
+      data: department,
+    };
   }
 
   @Get()
-  findAll() {
-    return this.departmentService.findAll();
+  async findAll() {
+    const departments = await this.departmentService.findAll();
+    return {
+      status: HttpStatus.OK,
+      message: 'Departments retrieved successfully',
+      data: departments,
+    };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.departmentService.findOne(+id);
+  async findOne(@Param('id') id: number) {
+    const department = await this.departmentService.findOne(id);
+    return {
+      status: HttpStatus.OK,
+      message: 'Department retrieved successfully',
+      data: department,
+    };
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDepartmentDto: UpdateDepartmentDto) {
-    return this.departmentService.update(+id, updateDepartmentDto);
+  @Put(':id')
+  async update(@Param('id') id: number, @Body() updateDepartmentDto: UpdateDepartmentDto) {
+    const department = await this.departmentService.update(id, updateDepartmentDto);
+    return {
+      status: HttpStatus.OK,
+      message: 'Department updated successfully',
+      data: department,
+    };
   }
+
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.departmentService.remove(+id);
+  async delete(@Param('id') id: number) {
+    await this.departmentService.delete(id);
+    return {
+      status: HttpStatus.OK,
+      message: 'Department deleted successfully',
+    };
   }
 }
