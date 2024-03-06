@@ -5,6 +5,7 @@ import * as dotenv from 'dotenv';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DepartmentModule } from './department/department.module';
 import { EmployeeModule } from './employee/employee.module';
+import { AttendanceModule } from './attendance/attendance.module';
 
 
 
@@ -33,7 +34,8 @@ dotenv.config();
       }
     ),
     DepartmentModule,
-    EmployeeModule
+    EmployeeModule,
+    AttendanceModule
   ],
   controllers: [AppController],
   providers: [AppService],
