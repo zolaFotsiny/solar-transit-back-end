@@ -3,6 +3,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import * as dotenv from 'dotenv';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { DepartmentModule } from './department/department.module';
+import { EmployeeModule } from './employee/employee.module';
 
 
 
@@ -24,6 +26,8 @@ dotenv.config();
         autoLoadEntities: true,
       }
     ),
+    DepartmentModule,
+    EmployeeModule
   ],
   controllers: [AppController],
   providers: [AppService],
