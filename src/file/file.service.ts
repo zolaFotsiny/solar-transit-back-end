@@ -49,13 +49,14 @@ export class FileService {
     const employeeMappings = [
       { excelColumnName: 'Firstname', attribute: 'firstName' },
       { excelColumnName: 'Lastname', attribute: 'lastName' },
+      { excelColumnName: 'Department', attribute: 'departmentId' },
       { excelColumnName: 'ID', attribute: 'employeeIdentifier' },
     ];
 
     const employees = await this.readExcelData(file.buffer, 'Employee', employeeMappings);
 
     for (const employee of employees) {
-      const departmentName = employee['Department'];
+      const departmentName = employee['departmentId'];
       let department = await this.departmentService.findByName(departmentName);
       if (!department) {
         department = await this.departmentService.create({ name: departmentName });
