@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DepartmentModule } from './department/department.module';
 import { EmployeeModule } from './employee/employee.module';
 import { AttendanceModule } from './attendance/attendance.module';
+import { FileModule } from './file/file.module';
 
 
 
@@ -23,7 +24,7 @@ dotenv.config();
         password: process.env.DB_PASSWORD,
         database: process.env.DB_DATABASE,
         entities: ["dist/**/*.entity{.ts,.js}"],
-        synchronize: true,
+        synchronize: false,
         autoLoadEntities: true,
         ssl: true,
         extra: {
@@ -35,7 +36,8 @@ dotenv.config();
     ),
     DepartmentModule,
     EmployeeModule,
-    AttendanceModule
+    AttendanceModule,
+    FileModule
   ],
   controllers: [AppController],
   providers: [AppService],
