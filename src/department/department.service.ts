@@ -61,5 +61,14 @@ export class DepartmentService {
   }
 
 
+  async findByName(name: string): Promise<Department> {
+    const department = await this.departmentRepository.findOne({
+      where: {
+        name
+      },
+    });
+    return department;
+  }
+
 
 }
