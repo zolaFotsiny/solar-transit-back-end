@@ -32,13 +32,13 @@ export class DepartmentService {
       where: {
         id
       },
+      relations: ['employees'],
     });
     if (!department) {
       throw new NotFoundException(`Department with ID ${id} not found`);
     }
     return department;
   }
-
 
   // This action updates a department 
   async update(id: number, updateDepartmentDto: UpdateDepartmentDto): Promise<Department> {
