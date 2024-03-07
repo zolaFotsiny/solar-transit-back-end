@@ -44,6 +44,7 @@ export class AttendanceService {
       where: {
         id
       },
+      relations: ["employee", "employee.department"]
     });
     if (!attendance) {
       throw new NotFoundException(`Attendance with ID ${id} not found`);
