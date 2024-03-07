@@ -126,7 +126,7 @@ export class AttendanceService {
     // Query attendance records and fill in the counts
     const result = await this.attendanceRepository
       .createQueryBuilder('attendance')
-      .select('MONTH(attendance.date) AS month')
+      .select('EXTRACT(MONTH FROM attendance.date) AS month')
       .addSelect('COUNT(attendance.id)', 'count')
       .where('attendance.date >= :startOfYear', { startOfYear })
       .andWhere('attendance.date <= :endOfYear', { endOfYear })
