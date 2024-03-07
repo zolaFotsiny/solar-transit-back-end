@@ -6,40 +6,47 @@ import { Like, Repository } from 'typeorm';
 import { Department } from './entities/department.entity';
 import { CriteriaDepartmentDto } from './dto/criteria-department.dto';
 
+
 @Injectable()
 export class DepartmentService {
+
 
   constructor(
     @InjectRepository(Department)
     private readonly departmentRepository: Repository<Department>,
   ) { }
 
-
-  async createWithContrainte(createDepartmentDto: CreateDepartmentDto): Promise<Department> {
-    const existingDepartment = await this.departmentRepository.findOne({ where: { name: createDepartmentDto.name } });
-
-    if (existingDepartment) {
-      throw new ConflictException('A department with this name already exists.');
+  // Method to create a department with or without constraint
+  async createDepartment(createDepartmentDto: CreateDepartmentDto, checkConstraint: boolean): Promise<Department> {
+    // If checkConstraint is true, check if a department with the same name already exists
+    if (checkConstraint) {
+      const existingDepartment = await this.departmentRepository.findOne({ where: { name: createDepartmentDto.name } });
+      if (existingDepartment) {
+        throw new ConflictException('A department with this name already exists.');
+      }
     }
 
+    // Create and save the new department
     const department = this.departmentRepository.create(createDepartmentDto);
     return this.departmentRepository.save(department);
   }
 
-  // This action adds a new department
+  // Method to create a department with constraint
+  async createWithContrainte(createDepartmentDto: CreateDepartmentDto): Promise<Department> {
+    return this.createDepartment(createDepartmentDto, true);
+  }
+
+  // Method to create a department without constraint
   async create(createDepartmentDto: CreateDepartmentDto): Promise<Department> {
-    const department = this.departmentRepository.create(createDepartmentDto);
-    return this.departmentRepository.save(department);
+    return this.createDepartment(createDepartmentDto, false);
   }
 
-
-  // This action returns all department
+  // Method to get all departments
   async findAll(): Promise<Department[]> {
     return this.departmentRepository.find();
   }
 
-
-
+  // Method to find departments by criteria
   async findByCriteria(criteria: Partial<CriteriaDepartmentDto>): Promise<Department[]> {
     const { id, name } = criteria;
 
@@ -64,8 +71,7 @@ export class DepartmentService {
     return departments;
   }
 
-
-  // This action returns a  department by id 
+  // Method to find a department by id
   async findOne(id: number): Promise<Department> {
     const department = await this.departmentRepository.findOne({
       where: {
@@ -79,7 +85,7 @@ export class DepartmentService {
     return department;
   }
 
-  // This action updates a department 
+  // Method to update a department
   async update(id: number, updateDepartmentDto: UpdateDepartmentDto): Promise<Department> {
     const existingDepartment = await this.findOne(id);
     if (!existingDepartment) {
@@ -89,8 +95,7 @@ export class DepartmentService {
     return this.departmentRepository.save(existingDepartment);
   }
 
-
-  // `This action removes a  department
+  // Method to delete a department
   async delete(id: number): Promise<void> {
     const department = await this.findOne(id);
     if (!department) {
@@ -99,7 +104,7 @@ export class DepartmentService {
     await this.departmentRepository.remove(department);
   }
 
-
+  // Method to find a department by name
   async findByName(name: string): Promise<Department> {
     const department = await this.departmentRepository.findOne({
       where: {
@@ -108,6 +113,4 @@ export class DepartmentService {
     });
     return department;
   }
-
-
 }
