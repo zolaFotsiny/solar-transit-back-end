@@ -35,7 +35,7 @@ export class AttendanceService {
 
   // This action returns all attendance
   async findAll(): Promise<Attendance[]> {
-    return this.attendanceRepository.find();
+    return this.attendanceRepository.find({ relations: ["employee", "employee.department"] });
   }
 
   // This action returns an attendance by id 
