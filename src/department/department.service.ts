@@ -2,8 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { Department } from './entities/department.entity';
+import { CriteriaDepartmentDto } from './dto/criteria-department.dto';
 
 @Injectable()
 export class DepartmentService {
@@ -23,6 +24,32 @@ export class DepartmentService {
   // This action returns all department
   async findAll(): Promise<Department[]> {
     return this.departmentRepository.find();
+  }
+
+
+
+  async findByCriteria(criteria: Partial<CriteriaDepartmentDto>): Promise<Department[]> {
+    const { id, name } = criteria;
+
+    const whereClause: any = {};
+
+    if (id) {
+      whereClause.id = id;
+    }
+
+    if (name) {
+      whereClause.name = Like(`%${name}%`);
+    }
+
+    const departments = await this.departmentRepository.find({
+      where: whereClause,
+    });
+
+    if (!departments || departments.length === 0) {
+      throw new NotFoundException(`No departments found with the given criteria`);
+    }
+
+    return departments;
   }
 
 
