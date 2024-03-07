@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,6 +13,18 @@ export class DepartmentService {
     @InjectRepository(Department)
     private readonly departmentRepository: Repository<Department>,
   ) { }
+
+
+  async createWithContrainte(createDepartmentDto: CreateDepartmentDto): Promise<Department> {
+    const existingDepartment = await this.departmentRepository.findOne({ where: { name: createDepartmentDto.name } });
+
+    if (existingDepartment) {
+      throw new ConflictException('A department with this name already exists.');
+    }
+
+    const department = this.departmentRepository.create(createDepartmentDto);
+    return this.departmentRepository.save(department);
+  }
 
   // This action adds a new department
   async create(createDepartmentDto: CreateDepartmentDto): Promise<Department> {

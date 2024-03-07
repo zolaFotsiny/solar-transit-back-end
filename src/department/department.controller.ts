@@ -18,7 +18,7 @@ export class DepartmentController {
 
   @Post()
   async create(@Body() createDepartmentDto: CreateDepartmentDto) {
-    const department = await this.departmentService.create(createDepartmentDto);
+    const department = await this.departmentService.createWithContrainte(createDepartmentDto);
     return {
       status: HttpStatus.CREATED,
       message: 'Department created successfully',

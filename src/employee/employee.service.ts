@@ -24,7 +24,15 @@ export class EmployeeService {
       employee = this.employeeRepository.merge(employee, createEmployeeDto);
     }
 
-    return this.employeeRepository.save(employee);
+    const savedEmployee = await this.employeeRepository.save(employee);
+    return this.employeeRepository.findOne({
+      where: {
+        id: savedEmployee.id
+      },
+      relations: ['department'],
+    });
+
+
   }
 
   // Retrieve all Employee entities from the database
