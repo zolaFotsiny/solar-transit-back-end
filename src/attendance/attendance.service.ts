@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Attendance } from './entities/attendance.entity';
 import { EmployeeService } from 'src/employee/employee.service';
+import * as moment from 'moment';
 
 @Injectable()
 export class AttendanceService {
@@ -109,4 +110,41 @@ export class AttendanceService {
     }
   }
 
+
+  async getYearlyAttendanceStatistics(): Promise<any> {
+    const currentYear = new Date().getFullYear();
+    const startOfYear = moment().startOf('year').toDate();
+    const endOfYear = moment().endOf('year').toDate();
+
+    // Generate a list of all months in the current year
+    const allMonths = Array.from({ length: 12 }, (_, i) => i + 1);
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    // Initialize an array to hold the attendance count for each month
+    let monthlyCounts: number[] = new Array(12).fill(0);
+
+    // Query attendance records and fill in the counts
+    const result = await this.attendanceRepository
+      .createQueryBuilder('attendance')
+      .select('MONTH(attendance.date) AS month')
+      .addSelect('COUNT(attendance.id)', 'count')
+      .where('attendance.date >= :startOfYear', { startOfYear })
+      .andWhere('attendance.date <= :endOfYear', { endOfYear })
+      .groupBy('month')
+      .getRawMany();
+
+    // Fill in the attendance count for each month
+    result.forEach(item => {
+      const monthIndex = item.month - 1; // Convert month number to array index (0-based)
+      monthlyCounts[monthIndex] = item.count;
+    });
+
+    // Ensure all values are numbers
+    monthlyCounts = monthlyCounts.map(value => Number(value));
+
+    return {
+      categories: monthNames,
+      value: monthlyCounts,
+    };
+  }
 }

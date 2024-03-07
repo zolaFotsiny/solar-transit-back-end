@@ -27,6 +27,17 @@ export class AttendanceController {
     };
   }
 
+
+  @Get('/stat')
+  async getYearlyAttendanceStatistics() {
+    const stat = await this.attendanceService.getYearlyAttendanceStatistics();
+    return {
+      status: HttpStatus.OK,
+      message: 'Attendances retrieved successfully',
+      data: stat,
+    };
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: number) {
     const attendance = await this.attendanceService.findOne(id);
