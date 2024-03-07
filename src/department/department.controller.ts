@@ -25,16 +25,11 @@ export class DepartmentController {
       data: department,
     };
   }
-
+  // Method to retrieve all departments
   @Get()
-  async findAll(@Body() criteria: Partial<CriteriaDepartmentDto>, @Query() query: any): Promise<ApiResponse> {
+  async findAll(): Promise<ApiResponse> {
     try {
-      let departments: Department[];
-      if (Object.keys(criteria).length > 0 || Object.keys(query).length > 0) {
-        departments = await this.departmentService.findByCriteria(criteria);
-      } else {
-        departments = await this.departmentService.findAll();
-      }
+      const departments = await this.departmentService.findAll();
       if (departments.length > 0) {
         return {
           status: HttpStatus.OK,
@@ -57,6 +52,35 @@ export class DepartmentController {
       };
     }
   }
+
+  // Method to retrieve departments based on criteria
+  @Post('/criteria')
+  async findByCriteria(@Body() criteria: Partial<CriteriaDepartmentDto>): Promise<ApiResponse> {
+    try {
+      const departments = await this.departmentService.findByCriteria(criteria);
+      if (departments.length > 0) {
+        return {
+          status: HttpStatus.OK,
+          message: 'Departments retrieved successfully',
+          data: departments,
+        };
+      } else {
+        return {
+          status: HttpStatus.NO_CONTENT,
+          message: 'No departments found',
+          data: [],
+        };
+      }
+    } catch (error) {
+      console.error('Error retrieving departments:', error);
+      return {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Failed to retrieve departments',
+        error: error.message,
+      };
+    }
+  }
+
 
   @Get(':id')
   async findOne(@Param('id') id: number) {
